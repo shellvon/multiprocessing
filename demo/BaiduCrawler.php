@@ -31,6 +31,13 @@ class BaiduCrawler extends \MultiProcessing\Worker
         return $this->params;
     }
 
+    public function setBaseUrl($url){
+        $this->baseUrl = $url;
+    }
+
+    public function getBaseUrl(){
+        return $this->baseUrl;
+    }
     protected function process($arguments = null)
     {
         $this->params = $arguments;

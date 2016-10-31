@@ -11,6 +11,7 @@
 
 namespace MultiProcessing;
 
+use Jeremeamia\SuperClosure\SerializableClosure;
 use MultiProcessing\Contracts\Event\JobEvent;
 use MultiProcessing\Contracts\Job\Job;
 use MultiProcessing\Contracts\Observer\Observable;
@@ -92,12 +93,15 @@ class Worker implements Observable, Job
         }
     }
 
-    public function addListener($event, \Closure $callback, $opt = array())
+    public function addListener($event, \Closure $callback, $opt = array(), $override = false)
     {
         if (!is_array($opt)) {
             $opt = array($opt);
         }
-        $this->events[$event] = array($callback, $opt);
+        if (isset($this->events[$event]) && !$override) {
+            throw new \LogicException("The event[$event] is already exists");
+        }
+        $this->events[$event] = array(new SerializableClosure($callback), $opt);
 
         return $this;
     }

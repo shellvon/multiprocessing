@@ -1,0 +1,16 @@
+{
+    "name": "shellvon/multiprocessing",
+    "description": "The Lightweight MultiProcessing Library for PHP",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "shellvon",
+            "email": "iamshellvon@gmail.com"
+        }
+    ],
+    "require": {
+        "php":">=5.3.3",
+        "jeremeamia/SuperClosure": "1.0.2"
+    }
+}

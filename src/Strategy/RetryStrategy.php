@@ -50,9 +50,6 @@ class RetryStrategy implements Strategy
         if ($retryCnt >= 0) {
             $this->maxRetryCnt = $retryCnt;
         }
-        if ($retryType == self::TYPE_LATER) {
-            throw new \LogicException('RetryType<later> not implements yet.');
-        }
         $this->retryType = $retryType;
         $this->setCurrentRetryCnt(0);
     }

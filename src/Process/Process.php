@@ -87,7 +87,7 @@ class Process implements Runnable
         while (true) {
             pcntl_signal_dispatch();
             if (posix_getpid() != $this->parentPid) {
-                $this->log('parent exited..');
+                $this->log('parent exited..', 'ERROR');
                 break;
             }
             $size = $this->jobQueue->size();
@@ -107,18 +107,21 @@ class Process implements Runnable
     /**
      * 记录日志.
      *
-     * @param $msg 消息.
+     * @param string $msg 消息.
      * @param null $level 消息级别.
      */
     protected function log($msg, $level = null)
     {
+        if ($this->logger  === null) {
+            return;
+        }
         // color   30:黑,31:红,32:绿,33:黄,34:蓝色,35:紫色,36:深绿,37:白色
         // gcolor 40:黑, 41:深红,42:绿,43:黄色,44:蓝色,45:紫色,46:深绿,47:白色
         // style   0:无样式,1:高亮/加粗,4:下换线,7:反显
         $level = $level === null ? 'INFO' : strtoupper($level);
         if ($this->logger === null) {
             $style = 1;
-            $color = 32;
+            $color = $level == 'INFO' ? 32 : 31 ;
             $bgColor = 49;
             echo "\033[{$style};{$color};{$bgColor}m{$level}:\033[0m";
             echo $msg.PHP_EOL;
@@ -178,9 +181,9 @@ class Process implements Runnable
             ++$this->runningProcessNumber;
         } else {
             $this->log('fork child pid:'.posix_getpid());
-            $arguments = $this->jobQueue->pop();
-            if ($arguments != null) {
-                $this->invokeWorker($this->worker, $arguments);
+            $job = $this->jobQueue->pop();
+            if ($job != null) {
+                $this->invokeWorker($job);
             }
             exit(0);
         }
@@ -189,25 +192,24 @@ class Process implements Runnable
     /**
      * 唤起一个worker任务.
      *
-     * @param Worker $worker    worker实例.
-     * @param array  $arguments Worker需要的参数.
+     * @param array $job 消息对列中的任务(worker && arguments).
      */
-    protected function invokeWorker(Worker $worker, $arguments = array())
+    protected function invokeWorker($job)
     {
+        if ($job == null) {
+            return;
+        }
+        list($worker, $arguments) = $job;
+
         $retryStrategy = $worker->getRetryStrategy();
         $retryCnt = 0; # 默认不重试.
+        $type = null;
         if ($retryStrategy != null) {
             $type = $retryStrategy->getRetryType();
             $retryCnt = $retryStrategy->getMaxRetryCnt() - $retryStrategy->getCurrentRetryCnt();
-            # 重试完毕，需要把重试结果放入消息队列.
-            if ($retryCnt <= 0) {
-                $this->msgQueue->put($worker->getResult());
-                $retryCnt = -1; # 后续不应该执行了。
-            }
         }
         while ($retryCnt >= 0) {
             try {
-                $worker->setJobId(posix_getpid());
                 $worker->start($arguments);
                 $retryCnt = -1; # 清空，不用再重试.
                 $this->msgQueue->put($worker->getResult());
@@ -217,13 +219,12 @@ class Process implements Runnable
                     $worker->getRetryStrategy()->increaseRetryCnt(); # 增加一次重试.
                 }
                 if ($type === RetryStrategy::TYPE_LATER) {
-                    # 子进程中worker又不一样了... 所以没用.
-                    $this->jobQueue->put($arguments);
+                    $this->jobQueue->put(array($worker, $arguments));
                     break;
                 }
                 --$retryCnt;
                 if ($retryCnt <= 0) {
-                    $this->msgQueue->put($this->worker->getResult());
+                    $this->msgQueue->put($worker->getResult());
                 }
             }
         }
@@ -248,12 +249,13 @@ class Process implements Runnable
      */
     public function map(Worker $worker, $opt = array())
     {
-        $this->worker = $worker;
-        foreach ((array) $opt as $arguments) {
-            $this->jobQueue->put($arguments);
+        foreach ((array) $opt as $idx => $arguments) {
+            $worker->setJobId("MultiProcessing_{$idx}");
+            $this->jobQueue->put(array($worker, $arguments));
         }
         $this->run();
 
         return $this->msgQueue->getAll();
     }
+
 }
