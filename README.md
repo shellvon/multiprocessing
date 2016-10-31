@@ -1,34 +1,81 @@
-# multiprocessing
-The Lightweight MultiProcessing Library for PHP
+multiprocessing
 
-# Requires
+一个非常非常轻量级的多进程处理的PHP框架。目前使用共享内存/信号量进行进程间通信(IPC)
 
-* Linux/MacOS
-* PHP 5.3+ (Not PHP7) with `-enable-pcntl` and `--enable-sysvshm`
-* [Composer](https://getcomposer.org/)
 
-# How
-From the demo folder, you can see the `demo.php` file:
+特性
 
-```zsh
-➜  multiprocessing git:(master) ✗  php demo/demo.php
-Demo 1. BaiduSpider(Run BaiduSpider With EventListener)
-Job need retry, Change BaseURL:http://www.123.com/
-Job need retry, Change BaseURL:http://www.123.com/
-Job need retry, Change BaseURL:http://www.123.com/
-Job need retry, Change BaseURL:http://www.123.com/
-Job need retry, Change BaseURL:http://www.123.com/
-Job #[MultiProcessing_4] Run at:[2016-10-31T16:27:17+0800],url:[http://www.baidu.com] Successful
-Job #[MultiProcessing_2] Run at:[2016-10-31T16:27:17+0800],url:[http://www.baidu.com] Successful
-Job #[MultiProcessing_0] Run at:[2016-10-31T16:27:18+0800],url:[http://www.baidu.com] Successful
-Job #[MultiProcessing_3] Run at:[2016-10-31T16:27:18+0800],url:[http://www.baidu.com] Successful
-Job #[MultiProcessing_1] Run at:[2016-10-31T16:27:19+0800],url:[http://www.baidu.com] Successful
-BaiduSpider finished. Time elapsed:3.2079880237579 sec
-Demo 2.Get sum of range(1..100) (Use SharedMemQueue to save each process result)
-Sums finished,get result:5050, use time:0.13310813903809 sec
+- 轻松创建多进程,不用担心IPC问题
+- worker使用观察者模式,支持注册worker的开始/重试/成功/失败等事件。比如在重试的时候修改worker属性
+- worker支持重试机制.(立即重试/放入队列稍后重试)
+- API简单,用户实现自己在process中的业务逻辑
+- 方便扩展,用户可以自己实现自己比如DB相关的数据队列(实现MultiProcessing\Contracts\Queue)
+- 我想不到了
 
-```
+快速开始
 
-# Change Logs
-* 2016-10-31 Add composer support && Add Worker(with [superClosure](https://github.com/jeremeamia/super_closure) support) to jobQueue to make `RetryStrategy::LATER` can work.
-* 2016-10-30 First repo i committed.
+环境要求
+
+该项目在PHP5.6,Mac OS下开发,但是没有使用[]表示数组/yield关键字等PHP高版本的语法特性，理论上PHP5.3+都支持。
+
+- Linux/MacOS
+- PHP 5.3+ (Not PHP7) with -enable-pcntl and --enable-sysvshm
+- Composer
+
+使用步骤
+
+如果需要自己创建一个多进程任务，你需要几分钟完成以下工作(比起自己去创建/管理多进程来说这个时间很短啦)
+
+1. 参见demo/BaiduCrawler.php, 将你自己的worker类继承\MultiProcessing\Worker即可,并且同时实现process方法。需要注意的是实现process方法时候，请返回实现了MultiProcessing\Contracts\Response的类型，否则worker将把自动转为类型为JobResponse(该类实现了MultiProcessing\Contracts\Response接口)
+2. 添加自己喜欢的Listener回调,比如JobEvent::JOB_SUCCESS之类的。
+3. 调用\MultiProcessing\Process\Process并且设置好进程数量;然后调用map这个API即可。
+
+当然，你可以自己查看demo目录下的代码
+
+
+
+代码结构
+
+    multiprocessing-+
+                    |--demo-+
+                    |       |--BaiduCrawler.php // Curl爬百度首页的演示代码
+                    |       |--Sums.php         // 求和的演示代码
+            		|       |--demo.php         // 演示代码,执行php demo.php 看效果
+                    |       |--clearIPC.py      // MacOS下清理共享数据的python脚本
+                    |
+                    |
+                    |--src--+                    //核心文件目录
+                    |       |--BootStrap-+    
+                    |       |            |--Autoloader.php  // 自动加载
+                    |       |--Contract-+    
+                    |       |           |--//各种接口，高级用户需要自己实现某些接口以完成任务
+                    |       |--Events-+
+                    |       |		  |--JobEvents.php    // 任务事件.用于事件监听
+                    |       |--Process-+    
+                    |       |          |--Process.php     // 多进程管理相关文件
+                    |       |--Queue-+
+                    | 		|		 |--SharedMemQueue.php // 利用共享内存实现的队列
+                    |       |     	 |--NullQueue.php      // 空队列，啥也不做 
+                    |		|--Response-+
+                    |       |           |--JobResponse.php
+                    |       |--Strategy-+
+                    |                   |--RetryStrategy.php // 重试策略.
+                    |--vendor              //Composer管理的第三方库
+               		|
+               		|--Worker.php         // Worker类，用户需要继承然后实现它的process方法
+
+
+
+TodoList
+
+:smile: 等我想想 …..
+
+
+
+变更日志
+
+- 2016-10-31 
+  - 增加Composer支持
+  - 增加 superClosure 支持,以实现重试机制 RetryStrategy::LATER 
+  - 修改Readme文档
+- 2016-10-30 第一版Demo诞生
