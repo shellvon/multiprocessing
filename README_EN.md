@@ -18,6 +18,7 @@ A very **very** light weight PHP framework for multi processing.Currently implem
 * Linux/Mac OS X
 * PHP 5.3+ with `-enable-pcntl` and `--enable-sysvshm`
 * [Composer](https://getcomposer.org/)
+
 > This project is developed on PHP 5.6, Mac OS X, but haven't use `[]` to present array,
 neither use keyword like `yield`, and other features of higher version than PHP5.3, so PHP 5.3
 is supported in theory.
@@ -25,12 +26,11 @@ is supported in theory.
 #### Usage
 Only a few steps to create a multi process task:
 1. Extend `MultiProcessing\Worker` and implement `process` to define your own worker class.
+2. Add listeners for events you care about, e.g. `JobEvent::JOB_SUCCESS`.
+3. Call `\MultiProcessing\Process\Process` and set max count for processes, then call `map`.
  > NOTE: If you do not return a type that already implements `MultiProcessing\Contracts\Response`
   on `process` method, worker would automatically cast it to `JobResponse`, which
   implemented`Response` interface properly.
-
-2. Add listeners for events you care about, e.g. `JobEvent::JOB_SUCCESS`.
-3. Call `\MultiProcessing\Process\Process` and set max count for processes, then call `map`.
 
 That's all!
 
