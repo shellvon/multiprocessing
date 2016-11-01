@@ -6,10 +6,12 @@
     "authors": [
         {
             "name": "shellvon",
-            "email": "iamshellvon@gmail.com",
-            "source": "https://github.com/shellvon/multiprocessing"
+            "email": "iamshellvon@gmail.com"
         }
     ],
+    "support": {
+        "source": "https://github.com/shellvon/multiprocessing"
+    },
     "require": {
         "php":">=5.3.3",
         "jeremeamia/SuperClosure": "1.0.2"
