@@ -1,8 +1,7 @@
 # multiprocessing
 
+###[English Doc](./README_EN.md) [Change Log](./CHANGELOG.md)
 一个非常非常轻量级的多进程处理的PHP框架。目前使用共享内存/信号量进行进程间通信(IPC)
-
-
 
 # 特性
 
@@ -68,16 +67,6 @@ multiprocessing-+
 
 
 
-# Todo List
+# TODO
 
 :smile: 等我想想 …..
-
-
-
-# 变更日志
-
-- 2016-10-31
-  - 增加Composer支持
-  - 增加 [superClosure](https://github.com/jeremeamia/super_closure) 支持,以实现重试机制 `RetryStrategy::LATER`
-  - 修改Readme文档
-- 2016-10-30 第一版Demo诞生
