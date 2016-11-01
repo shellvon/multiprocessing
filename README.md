@@ -61,15 +61,14 @@ multiprocessing-+
                 |		|--Response-+
                 |       |           |--JobResponse.php
                 |       |--Strategy-+
-                |                   |--RetryStrategy.php // 重试策略.
+                |       |           |--RetryStrategy.php // 重试策略.
+                |       |--Worker.php  // Worker类，用户需要继承然后实现它的process方法
                 |--vendor              //Composer管理的第三方库
-           		|
-           		|--Worker.php         // Worker类，用户需要继承然后实现它的process方法
 ```
 
 
 
-# TodoList
+# Todo List
 
 :smile: 等我想想 …..
 

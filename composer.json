@@ -6,11 +6,17 @@
     "authors": [
         {
             "name": "shellvon",
-            "email": "iamshellvon@gmail.com"
+            "email": "iamshellvon@gmail.com",
+            "source": "https://github.com/shellvon/multiprocessing"
         }
     ],
     "require": {
         "php":">=5.3.3",
         "jeremeamia/SuperClosure": "1.0.2"
+    },
+    "autoload": {
+        "psr-4":{
+            "MultiProcessing\\": "src/"
+        }
     }
 }

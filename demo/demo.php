@@ -10,14 +10,15 @@
  */
 define('APP_ROOT', __DIR__.DIRECTORY_SEPARATOR);
 date_default_timezone_set('PRC');
-require_once APP_ROOT.'/../src/Bootstrap/Autoloader.php';
 require_once APP_ROOT.'/../vendor/autoload.php';
 
-\MultiProcessing\Bootstrap\Autoloader::instance()->addRoot(APP_ROOT)->init();
-
+use MultiProcessing\Bootstrap\Autoloader;
 use MultiProcessing\Contracts\Event\JobEvent;
 use MultiProcessing\Strategy\RetryStrategy;
 use MultiProcessing\Queue\SharedMemQueue;
+
+
+Autoloader::instance()->addRoot(APP_ROOT)->init();
 
 // Demo 1. BaiduSpider
 echo "Demo 1. BaiduSpider(Run BaiduSpider With EventListener)\n";
